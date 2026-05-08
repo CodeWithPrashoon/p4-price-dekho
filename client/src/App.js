@@ -9,6 +9,9 @@ import flipkart from "./assets/flipkart.png";
 import croma from "./assets/croma.png";
 import siteLogo from "./assets/logo.jpg"; 
 
+// ─── CONFIGURATION ───
+const API_BASE_URL = "https://p4-backend-fq2i.onrender.com";
+
 // ─── SVG ICONS ───
 const SearchIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
 const CartIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>;
@@ -346,13 +349,12 @@ function App() {
 
   // 🔥 NEW: Welcome Popup Logic 🔥
   useEffect(() => {
-    // Only show if the user isn't logged in AND they haven't seen it this session
     const hasSeenPopup = sessionStorage.getItem("seenWelcomePopup");
     if (!hasSeenPopup && !user) {
       const timer = setTimeout(() => {
         setShowWelcomePopup(true);
         sessionStorage.setItem("seenWelcomePopup", "true");
-      }, 2500); // Pops up after 2.5 seconds
+      }, 2500); 
       return () => clearTimeout(timer);
     }
   }, [user]);
@@ -362,7 +364,8 @@ function App() {
     e.preventDefault();
     const endpoint = isLoginMode ? "/login" : "/register";
     try {
-      const res = await axios.post(`http://localhost:5000${endpoint}`, authForm);
+      // UPDATED TO LIVE LINK
+      const res = await axios.post(`${API_BASE_URL}${endpoint}`, authForm);
       setUser(res.data.user); 
       setShowAuthModal(false);
       setAuthForm({ name: "", email: "", password: "" });
@@ -389,10 +392,12 @@ function App() {
     try {
       const randomQueries = ["mobile", "laptop", "smartwatch", "headphones"];
       const initialQuery = randomQueries[Math.floor(Math.random() * randomQueries.length)];
-      const res = await axios.get(`http://localhost:5000/search?q=${initialQuery}`);
+      // UPDATED TO LIVE LINK
+      const res = await axios.get(`${API_BASE_URL}/search?q=${initialQuery}`);
       if (res.data && res.data.length > 0) setData(processApiData(res.data));
       else {
-        const fallback = await axios.get("http://localhost:5000/search?q=deals");
+        // UPDATED TO LIVE LINK
+        const fallback = await axios.get(`${API_BASE_URL}/search?q=deals`);
         setData(processApiData(fallback.data));
       }
       setVisibleCount(12);
@@ -406,7 +411,8 @@ function App() {
     setLoading(true);
     setSuggestions([]);
     try {
-      const res = await axios.get(`http://localhost:5000/search?q=${val}`);
+      // UPDATED TO LIVE LINK
+      const res = await axios.get(`${API_BASE_URL}/search?q=${val}`);
       if (res.data && res.data.length > 0) setData(processApiData(res.data));
       else alert("No products found 😢");
       setVisibleCount(12);
@@ -447,7 +453,8 @@ function App() {
     const form = alertForms[item.name];
     if (!form || !form.email || !form.price) return alert("Please enter email and target price.");
     try {
-      await axios.post('http://localhost:5000/set-alert', {
+      // UPDATED TO LIVE LINK
+      await axios.post(`${API_BASE_URL}/set-alert`, {
         email: form.email, product: item.name, targetPrice: Number(form.price),
         currentPrice: lowestPrice, link: item.prices.find(p => p.price === lowestPrice)?.link || ""
       });
@@ -528,7 +535,7 @@ function App() {
       {historyItem && <PriceHistoryModal item={historyItem} onClose={() => setHistoryItem(null)} />}
       {showCompareModal && <ComparisonModal items={compareList} onClose={() => setShowCompareModal(false)} removeFromCompare={(name) => { setCompareList(prev => prev.filter(c => c.name !== name)); if(compareList.length<=1) setShowCompareModal(false); }} />}
 
-      {/* 🔥 NEW: WELCOME POPUP 🔥 */}
+      {/* 🔥 WELCOME POPUP 🔥 */}
       {showWelcomePopup && (
         <>
           <div onClick={() => setShowWelcomePopup(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:1300, backdropFilter:"blur(6px)" }} />
@@ -580,7 +587,7 @@ function App() {
         </>
       )}
 
-      {/* ── CLEAN NAVBAR ── */}
+      {/* ── NAVBAR ── */}
       <nav style={{ position:"fixed", top:0, width:"100%", height:"72px", padding:"0 40px", display:"flex", justifyContent:"space-between", alignItems:"center", background: "var(--bg-top)", zIndex:100 }}>
         <div style={{ display:"flex", alignItems:"center", gap: "16px", cursor:"pointer" }} onClick={handleGoHome}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
@@ -605,7 +612,6 @@ function App() {
             <CartIcon/><BadgeCount count={cart.reduce((s,c)=>s+c.qty,0)} />
           </div>
           
-          {/* 🔥 USER PROFILE DROPDOWN MENU 🔥 */}
           <div style={{ position: "relative" }}>
             <div style={{ cursor: "pointer" }} onClick={() => setShowProfileMenu(!showProfileMenu)}>
               {user ? (
@@ -632,7 +638,6 @@ function App() {
                         <p style={{ fontSize: "12px", color: "var(--text-muted)", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>{user.email}</p>
                       </div>
                     </div>
-                    {/* 🔥 UPDATED: Added Cart to the Profile Dropdown 🔥 */}
                     <div style={{ padding: "8px 0" }}>
                       <div className="sidebar-link" onClick={() => { setShowWishlist(true); setShowProfileMenu(false); }} style={{ padding: "12px 20px", borderRadius: 0 }}>♥ My Wishlist</div>
                       <div className="sidebar-link" onClick={() => { setShowCart(true); setShowProfileMenu(false); }} style={{ padding: "12px 20px", borderRadius: 0 }}>🛒 My Cart</div>
@@ -648,7 +653,7 @@ function App() {
         </div>
       </nav>
 
-      {/* ── TOP HERO BACKGROUND (Sage Green) ── */}
+      {/* ── HERO ── */}
       <div style={{ background: "var(--bg-top)", paddingTop: "140px", paddingBottom: "80px", textAlign: "center", position:"relative" }}>
         <h1 className="font-heading" style={{ fontWeight:800, fontSize:"clamp(32px, 4vw, 46px)", color:"var(--text-main)", lineHeight:1.2, marginBottom:"30px" }}>
           Compare Prices Across India.<br/>Find the Best Offers, Every Day.
@@ -675,7 +680,7 @@ function App() {
         </div>
       </div>
 
-      {/* ── CREAM BACKGROUND CONTENT ── */}
+      {/* ── CONTENT ── */}
       <div style={{ flex: 1, padding: "0 40px 80px", maxWidth: "1600px", margin: "0 auto", width: "100%" }}>
         <div style={{ marginTop: "-40px", position:"relative", zIndex:2 }}>
           <h2 className="font-heading" style={{ fontSize:"20px", marginBottom:"20px", color:"var(--text-main)" }}>Featured Deals</h2>
@@ -754,7 +759,7 @@ function App() {
           )}
         </div>
 
-        {/* ── EXPLORE CATEGORIES ── */}
+        {/* ── CATEGORIES ── */}
         <div style={{ marginTop: "60px" }}>
           <h2 className="font-heading" style={{ fontSize:"16px", textTransform:"uppercase", letterSpacing:"1px", color:"var(--text-main)", marginBottom:"24px" }}>Explore Categories</h2>
           <div style={{ display:"flex", gap:"16px", overflowX:"auto", paddingBottom:"10px", scrollbarWidth:"none" }}>
@@ -772,7 +777,7 @@ function App() {
         </div>
       </div>
 
-      {/* ── PANELS & MODALS ── */}
+      {/* ── PANELS ── */}
       {showCart && (
         <SidePanel 
           title="Your Cart" 
