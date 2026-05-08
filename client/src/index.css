@@ -1,0 +1,13 @@
+/* 🔥 REMOVE DEFAULT WHITE SPACE */
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow-x: hidden;
+}
+
+/* Optional smooth font */
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
